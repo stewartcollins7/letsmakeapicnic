@@ -31,6 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.android.synthetic.main.activity_maps.*
 import java.io.IOException
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener, LocationListener {
@@ -60,7 +61,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
   override fun onLocationChanged(p0: Location?) {
     if(p0 != null){
       lastLocation = p0
-      placeMarkerOnMap(LatLng(p0.latitude,p0.longitude))
+      //placeMarkerOnMap(LatLng(p0.latitude,p0.longitude),"default")
     }
   }
 
@@ -78,8 +79,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
   private val REQUEST_CHECK_SETTINGS = 2
   private val PLACE_PICKER_REQUEST = 3
   private var lastLocation: Location? = null
+    private lateinit var location1: LatLng
+    private lateinit var location2: LatLng
+    private lateinit var location3: LatLng
 
-  private fun loadPlacePicker(){
+  /*private fun loadPlacePicker(){
     val placePickerIntent = PlacePicker.IntentBuilder().build(this)
     try{
       startActivityForResult(placePickerIntent, PLACE_PICKER_REQUEST)
@@ -88,7 +92,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     }catch (e: GooglePlayServicesRepairableException){
       e.printStackTrace()
     }
-  }
+  }*/
 
   fun startLocationUpdates(){
     if(ActivityCompat.checkSelfPermission(this,
@@ -134,14 +138,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     }
   }
 
-  private fun placeMarkerOnMap(location: LatLng){
+  private fun placeMarkerOnMap(location: LatLng, color: String, parkName: String?){
     val markerOptions = MarkerOptions().position(location)
     //markerOptions.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource
       //(getResources(), R.mipmap.ic_user_location)))
-    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA))
-    var titleTexts = getAddress(location)
-    markerOptions.title(titleTexts)
-    mMap.addMarker(markerOptions)
+    var markerColor = BitmapDescriptorFactory.HUE_RED
+    if(color.equals("green")){
+      //markerColor = BitmapDescriptorFactory.HUE_GREEN
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.tree))
+    }else if (color.equals("purple")){
+      //markerColor = BitmapDescriptorFactory.HUE_VIOLET
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.liquor))
+    }else if(color.equals("blue")) {
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.supermarket))
+    }else{
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(markerColor))
+    }
+
+        var titleTexts: String
+        if(parkName != null){
+            titleTexts = parkName
+        }else{
+            titleTexts = getAddress(location)
+        }
+        markerOptions.title(titleTexts)
+        mMap.addMarker(markerOptions)
   }
 
   private fun getAddress(latLng: LatLng): String{
@@ -185,8 +206,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         lastLocation?.let {
           val currentLocation = LatLng(lastLocation!!.latitude, lastLocation!!.longitude)
-          placeMarkerOnMap(currentLocation)
-          mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,12f))
+          //placeMarkerOnMap(currentLocation, "default")
+//          mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,16f))
         }
 
       }
@@ -209,8 +230,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         .findFragmentById(R.id.map) as SupportMapFragment
     mapFragment.getMapAsync(this)
     createLocationRequest()
-    val fab = findViewById<FloatingActionButton>(R.id.fab)
-    fab.setOnClickListener{loadPlacePicker()}
+    /*val fab = findViewById<FloatingActionButton>(R.id.fab)
+    fab.setOnClickListener{loadPlacePicker()}*/
+      fab.setOnClickListener({
+          val mainMenuIntent = Intent(this, MainMenuActivity::class.java)
+          startActivity(mainMenuIntent)
+      })
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -227,7 +252,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         var addressText = place.name.toString()
         addressText += "\n" + place.address.toString()
 
-        placeMarkerOnMap(place.latLng)
+        placeMarkerOnMap(place.latLng, "default", null)
       }
     }
   }
@@ -271,13 +296,71 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     mMap = googleMap
 
     // Add a marker in Melbourne and move the camera
-    val myPlace = LatLng(-37.8136, 144.9631)
-    mMap.addMarker(MarkerOptions().position(myPlace).title("My favorite city"))
-    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPlace, 12f))
+    //val myPlace = LatLng(-37.8136, 144.9631)
+    //mMap.addMarker(MarkerOptions().position(myPlace).title("My favorite city"))
+    //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPlace, 12f))
 
+    val receivedIntent = intent
+    if(receivedIntent.hasExtra("locationArray")){
+      val locations = receivedIntent.getDoubleArrayExtra("locationArray")
+        val parkLocation = LatLng(locations.get(2),locations.get(3))
+        if(receivedIntent.hasExtra("parkName")){
+            placeMarkerOnMap(parkLocation,"green", receivedIntent.getStringExtra("parkName"))
+        }else{
+            placeMarkerOnMap(parkLocation,"green", null)
+        }
+        if(receivedIntent.getBooleanExtra("withFood",false)){
+            location2 = LatLng(locations.get(4),locations.get(5))
+            placeMarkerOnMap(location2, "blue", null)
+            if(receivedIntent.getBooleanExtra("withDrinks",false)){
+                location2 = LatLng(locations.get(6),locations.get(7))
+                placeMarkerOnMap(location2, "purple", null)
+            }
+        }else if(receivedIntent.getBooleanExtra("withDrinks",false)){
+            location2 = LatLng(locations.get(4),locations.get(5))
+            placeMarkerOnMap(location2, "purple", null)
+        }
+
+
+//        location2 = LatLng(locations.get(4),locations.get(5))
+//        Log.v("Location 2","Lat" + location2.latitude + " Long"+ location2.longitude)
+//      placeMarkerOnMap(location2, "purple", null)
+//        val currentLocation = LatLng(locations.get(0),locations.get(1))
+        val centrePoint = calculateCentrePoint(locations)
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(centrePoint,16f))
+
+    }
 
     mMap.getUiSettings().setZoomControlsEnabled(true)
     mMap.setOnMarkerClickListener(this)
 
   }
+    private fun calculateCentrePoint(locations: DoubleArray): LatLng{
+        var latitudes = DoubleArray(locations.size/2)
+        var longitdues = DoubleArray(locations.size/2)
+        for(i in locations.indices){
+            if(i % 2 == 0){
+                latitudes.set(i/2,locations.get(i))
+            }else{
+                longitdues.set(i/2,locations.get(i))
+            }
+        }
+        var centreLat = 0e0
+        var centreLng = 0e0
+
+        var minLat = latitudes.min()
+        var maxLat = latitudes.max()
+        var minLng = longitdues.min()
+        var maxLng = longitdues.max()
+        if(minLat != null && maxLat != null && minLng != null && maxLng != null){
+            centreLat = minLat + (maxLat - minLat)/2
+            centreLng = minLng + (maxLng - minLng)/2
+
+        }else{
+            Log.e("Error on centre","Null value for one of recieved points calculating centre")
+        }
+        return LatLng(centreLat,centreLng)
+
+
+    }
 }

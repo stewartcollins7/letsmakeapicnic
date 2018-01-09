@@ -18,8 +18,9 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom|end"
-      android:src="@android:drawable/ic_menu_search"/>
-
+      android:src="@android:drawable/ic_media_previous"
+      app:layout_anchor="@+id/map"
+      app:layout_anchorGravity="left|bottom" />
 </android.support.design.widget.CoordinatorLayout>
 
 
