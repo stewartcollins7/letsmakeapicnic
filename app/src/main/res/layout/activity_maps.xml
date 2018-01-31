@@ -20,7 +20,7 @@
       android:layout_gravity="bottom|end"
       android:src="@android:drawable/ic_media_previous"
       app:layout_anchor="@+id/map"
-      app:layout_anchorGravity="left|bottom" />
+      app:layout_anchorGravity="left|top" />
 </android.support.design.widget.CoordinatorLayout>
 
 

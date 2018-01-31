@@ -6,11 +6,19 @@ package com.example.nunya.letsmakeapicnic
 
 data class PlaceData (
         val geometry: CoordinateHolder,
-        val name: String
+        val name: String,
+        val place_id: String,
+        val types: List<String>
 )
 
 data class CoordinateHolder (
-        val location: Coordinates
+        val location: Coordinates,
+        val viewport: MapCornerCoordinates
+)
+
+data class MapCornerCoordinates(
+        val northeast: Coordinates,
+        val southwest: Coordinates
 )
 
 data class Coordinates (

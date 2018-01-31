@@ -13,13 +13,17 @@ import retrofit2.http.Query
  * Created by Stewart Collins on 9/01/18.
  */
 interface GooglePlacesAPIService {
-    @GET("json?rankby=distance")
+    @GET("nearbysearch/json?rankby=distance")
     fun searchNearbyPlaces(@Query("location") currentLocation: String, @Query("key") mapsKey: String,
                     @Query("type") placeType: String): Observable<PlaceDataResult>
 
-    @GET("json?rankby=distance&opennow=true")
+    @GET("nearbysearch/json?rankby=distance&opennow=true")
     fun searchNearbyOpenPlaces(@Query("location") currentLocation: String, @Query("key") mapsKey: String,
                            @Query("type") placeType: String): Observable<PlaceDataResult>
+
+    @GET("details/json?")
+    fun getPlaceDetails(@Query("placeid") placeId: String, @Query("key") mapsKey: String): Observable<PlaceDetailsResult>
+
     /**
      * Companion object to create the GithubApiService
      */
@@ -28,7 +32,7 @@ interface GooglePlacesAPIService {
             val retrofit = Retrofit.Builder()
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
-                    .baseUrl("https://maps.googleapis.com/maps/api/place/nearbysearch/")
+                    .baseUrl("https://maps.googleapis.com/maps/api/place/")
                     .build()
 
             return retrofit.create(GooglePlacesAPIService::class.java);

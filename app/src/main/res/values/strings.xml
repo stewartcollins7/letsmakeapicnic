@@ -2,7 +2,21 @@
     <string name="app_name">Let\'s Have A Picnic</string>
     <string name="title_activity_maps">Find The Picnic</string>
     <string name="main_menu_title">Let\'s Have A Picnic</string>
-    <string name="main_menu_food_option">Food</string>
-    <string name="main_menu_drinks_option">Drinks</string>
-    <string name="main_menu_button">Do It!</string>
+    <string name="main_menu_food_option">via Supermarket</string>
+    <string name="main_menu_drinks_option">via Liquor Store</string>
+    <string name="main_menu_button">Closest Park</string>
+    <string name="custom_location_button">Custom Location</string>
+    <string name="choose_park_button">Choose Park</string>
+
+    <string name="EXTRA_PARK_DETAILS">net.stewartcollins.letsmakeapicnic.parkDetails</string>
+    <string name="EXTRA_CURRENT_LOCATION">net.stewartcollins.letsmakeapicnic.currentLocation</string>
+    <string name="EXTRA_SUPERMARKET_DETAILS">net.stewartcollins.letsmakeapicnic.supermarketDetails</string>
+    <string name="EXTRA_LIQUOR_STORE_DETAILS">net.stewartcollins.letsmakeapicnic.liquorStoreDetails</string>
+    <string name="EXTRA_SELECTING_PARKS">net.stewartcollins.letsmakeapicnic.selectingParks</string>
+    <string name="EXTRA_PARKS_ARRAY">net.stewartcollins.letsmakeapicnic.parksArray</string>
+    <string name="EXTRA_WANTS_FOOD">net.stewartcollins.letsmakeapicnic.wantsFood</string>
+    <string name="EXTRA_WANTS_DRINKS">net.stewartcollins.letsmakeapicnic.wantsDrinks</string>
+    <string name="EXTRA_PARK_SPECIFIED">net.stewartcollins.letsmakeapicnic.parkSpecified</string>
+    <string name="EXTRA_CUSTOM_LOCATION">net.stewartcollins.letsmakeapicnic.customLocation</string>
+    <string name="EXTRA_CHOOSE_PARK">net.stewartcollins.letsmakeapicninc.choosePark</string>
 </resources>
