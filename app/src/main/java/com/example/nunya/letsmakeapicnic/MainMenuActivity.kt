@@ -27,7 +27,7 @@ class MainMenuActivity : AppCompatActivity() {
             Toast.makeText(this,"This app requires access to your location to function",Toast.LENGTH_LONG).show()
             requestLocationPermission()
         }else{
-            val intent = Intent(this, MainMenuActivity::class.java)
+            val intent = Intent(this, MapsActivity::class.java)
             val menuOptions = createMenuOptions(false,null,null)
             intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
             startActivity(intent)
@@ -35,7 +35,7 @@ class MainMenuActivity : AppCompatActivity() {
     })
 
       mainMenuButton3.setOnClickListener({
-          val intent = Intent(this,MainMenuActivity::class.java)
+          val intent = Intent(this,MapsActivity::class.java)
           val menuOptions = createMenuOptions(true,null,null)
           intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
           startActivity(intent)
@@ -48,7 +48,7 @@ class MainMenuActivity : AppCompatActivity() {
         if(requestCode == PLACE_PICKER_REQUEST){
             if(resultCode == RESULT_OK){
                 val place = PlacePicker.getPlace(this, data)
-                val intent = Intent(this, MainMenuActivity::class.java)
+                val intent = Intent(this, MapsActivity::class.java)
                 val menuOptions = createMenuOptions(false,null,place)
                 intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
                 startActivity(intent)

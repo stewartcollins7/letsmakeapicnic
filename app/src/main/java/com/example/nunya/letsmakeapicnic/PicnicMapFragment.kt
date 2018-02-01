@@ -31,16 +31,16 @@ import com.google.android.gms.maps.model.LatLng
  */
 class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener, LocationListener, GoogleMap.OnInfoWindowClickListener  {
 
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1
+    private val REQUEST_CHECK_SETTINGS = 2
+    private lateinit var mMap: GoogleMap
+
     private var markers: Array<MarkerOptions>? = null
     private var selectingParks = false
-    private lateinit var mMap: GoogleMap
     private var googleApiClient: GoogleApiClient? = null
     private var isMarkerInfoWindowShown = false
-    private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private var locationRequest: LocationRequest? = null
     private var locationUpdateState = false
-    private val REQUEST_CHECK_SETTINGS = 2
-    private val PLACE_PICKER_REQUEST = 3
     private var lastLocation: Location? = null
 
     companion object {
@@ -293,7 +293,7 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
 
     override fun onPause() {
         super.onPause()
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+//        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
     }
 
     override fun onResume() {
@@ -328,39 +328,37 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val latLng = LatLng(1.289545, 103.849972)
-        googleMap.addMarker(MarkerOptions().position(latLng)
-                .title("Singapore"))
-        googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
 
-//        val bundle = intent.getExtras()
-//        val currentLocation = bundle.getParcelable<Location>(getString(R.string.EXTRA_CURRENT_LOCATION))
-//        val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
+        val bundle = arguments
+        val currentLocation = bundle.getParcelable<Location>(getString(R.string.EXTRA_CURRENT_LOCATION))
+        val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
 //
-//        selectingParks = bundle.getBoolean(getString(R.string.EXTRA_SELECTING_PARKS),false)
-//        if(selectingParks){
-//            val parksArray = bundle.getParcelableArray(getString(R.string.EXTRA_PARKS_ARRAY))
-//            for(park in parksArray){
-//                if(park is PlaceParcel){
-//                    placeMarkerOnMap(park)
-//                }
-//            }
-//            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,14f))
-//        }else{
-//            val parkParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_PARK_DETAILS))
-//            placeMarkerOnMap(parkParcel)
-//            if(bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
-//                val liquorStoreParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))
-//                placeMarkerOnMap(liquorStoreParcel)
-//            }
-//            if(bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
-//                val supermarketParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_SUPERMARKET_DETAILS))
-//                placeMarkerOnMap(supermarketParcel)
-//            }
-//        }
-
-//        mMap.setOnMapLoadedCallback(this)
-
+        selectingParks = bundle.getBoolean(getString(R.string.EXTRA_SELECTING_PARKS),false)
+        if(selectingParks){
+            val parksArray = bundle.getParcelableArray(getString(R.string.EXTRA_PARKS_ARRAY))
+            for(park in parksArray){
+                if(park is PlaceParcel){
+                    placeMarkerOnMap(park)
+                }
+            }
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,14f))
+        }
+        else{
+            val parkParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_PARK_DETAILS))
+            if(parkParcel == null){
+                Log.v("Park parcel", "Park info is null")
+            }
+            placeMarkerOnMap(parkParcel)
+            if(bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
+                val liquorStoreParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))
+                placeMarkerOnMap(liquorStoreParcel)
+            }
+            if(bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
+                val supermarketParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_SUPERMARKET_DETAILS))
+                placeMarkerOnMap(supermarketParcel)
+            }
+        }
+        mMap.setOnMapLoadedCallback(this)
 
     }
 
