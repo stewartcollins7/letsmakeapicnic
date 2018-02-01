@@ -1,176 +1,228 @@
-//This whole class has been refactored into CalculateMapPointsFragment and is no longer in used
-//
-// package com.example.nunya.letsmakeapicnic
-//
-//import android.content.Intent
-//import android.location.Location
-//import android.support.v7.app.AppCompatActivity
-//import android.os.Bundle
-//import android.util.Log
-//import io.reactivex.android.schedulers.AndroidSchedulers
-//import io.reactivex.schedulers.Schedulers
-//import com.google.android.gms.location.FusedLocationProviderClient
-//import com.google.android.gms.location.LocationServices
-//import com.google.android.gms.maps.model.LatLng
-//import java.util.*
-//import kotlin.collections.ArrayList
-//
-//
-//class CalculatingActivity : AppCompatActivity() {
-//    private lateinit var bundle: Bundle
-//
-//
-//    private val fusedLocationClient: FusedLocationProviderClient by
-//         lazy{LocationServices.getFusedLocationProviderClient(this)}
-//
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_calculating)
-//    }
-//
-//    override fun onStart() {
-//        super.onStart()
-//        bundle = Bundle()
-//        try{
-//            fusedLocationClient.lastLocation.addOnSuccessListener {
-//                location ->
-//                   if(location != null){
-//                       bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
-//                       if(intent.getBooleanExtra(getString(R.string.EXTRA_PARK_SPECIFIED),false)){
-//                           var parkParcel = intent.getParcelableExtra<PlaceParcel>(getString(R.string.EXTRA_PARK_DETAILS))
-//                           val locationArray = DoubleArray(4)
-//                           locationArray.set(0,location.latitude)
-//                           locationArray.set(1,location.longitude)
-//                           locationArray.set(2,parkParcel.latitude)
-//                           locationArray.set(3,parkParcel.longitude)
-////                           val parkParcel = convertPlaceDataToParcel(park)
-//                           bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
-//                           val nameArray = arrayOf(parkParcel.name)
-//                           val wantsDrinks = intent.getBooleanExtra(getString(R.string.EXTRA_WANTS_FOOD),false)
-//                           val wantsFood = intent.getBooleanExtra(getString(R.string.EXTRA_WANTS_DRINKS),false)
-//                           if(wantsFood){
-//                               getClosestSupermarket(locationArray,nameArray,wantsDrinks)
-//                           }else if(wantsDrinks){
-//                               getClosestLiquorStore(locationArray, nameArray, wantsFood, null)
-//                           }
-//                       }else{
-//                           getClosestPark(location)
-//                       }
-//
-//                       //getOpeningHours("whatever")
-//                   }else{
-//                       Log.v("Location Exception", "Current location not found in CalculatingActivity, GPS may be disabled")
-//                   }
-//            }
-//        }catch (e: SecurityException){
-//            Log.e("Permission Exception", "Location permissions not available in CalculatingActivity")
-//        }
-//    }
-//
-//    private fun getClosestPark(currentLocation: Location){
-////        val NUMBER_OF_PARKS = 10
-//        val receivedBundle = intent.extras
-//        if(receivedBundle != null && receivedBundle.containsKey(getString(R.string.EXTRA_CUSTOM_LOCATION))){
-//            val customLocationParcel = receivedBundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_CUSTOM_LOCATION))
-//            val locationArray = DoubleArray(4)
-//            locationArray.set(0,currentLocation.latitude)
-//            locationArray.set(1,currentLocation.longitude)
-//            locationArray.set(2,customLocationParcel.latitude)
-//            locationArray.set(3,customLocationParcel.longitude)
-//            bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),customLocationParcel)
-//            val nameArray = arrayOf(customLocationParcel.name)
-//            val wantsDrinks = receivedBundle.getBoolean(getString(R.string.EXTRA_WANTS_FOOD),false)
-//            val wantsFood = receivedBundle.getBoolean(getString(R.string.EXTRA_WANTS_DRINKS),false)
-//            if(wantsFood){
-//                getClosestSupermarket(locationArray,nameArray,wantsDrinks)
-//            }else if(wantsDrinks){
-//                getClosestLiquorStore(locationArray, nameArray, wantsFood, null)
-//            }else{
-//                loadMapActivity(locationArray,nameArray,wantsFood,wantsDrinks, null)
-//            }
-//        }else{
-//            val latitude = currentLocation.latitude
-//            val longitude = currentLocation.longitude
-//            val googlePlacesApi = GooglePlacesAPIService.create()
-//            val location = "$latitude,$longitude"
-//            val placeType = "park"
-//            var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribeOn(Schedulers.io())
-////                .take(NUMBER_OF_PARKS.toLong())
-//                    .subscribe(
-//                            { result ->
-//                                if(result.results.size > 0){
-//                                    val park = result.results.first()
-//                                    val parkLat = park.geometry.location.lat
-//                                    val parkLng = park.geometry.location.lng
-//                                    val locationArray = DoubleArray(4)
-//                                    locationArray.set(0,currentLocation.latitude)
-//                                    locationArray.set(1,currentLocation.longitude)
-//                                    locationArray.set(2,parkLat)
-//                                    locationArray.set(3,parkLng)
-//                                    val parkParcel = convertPlaceDataToParcel(park)
-//                                    bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
-//                                    val nameArray = arrayOf(park.name)
-//                                    val wantsDrinks = intent.getBooleanExtra(getString(R.string.EXTRA_WANTS_FOOD),false)
-//                                    val wantsFood = intent.getBooleanExtra(getString(R.string.EXTRA_WANTS_DRINKS),false)
-//                                    val choosePark = receivedBundle.getBoolean(getString(R.string.EXTRA_CHOOSE_PARK),false)
-//                                    if(wantsFood){
-//                                        getClosestSupermarket(locationArray,nameArray,wantsDrinks)
-//                                    }else if(wantsDrinks){
-//                                        getClosestLiquorStore(locationArray, nameArray, wantsFood, null)
-//                                    }else if(choosePark){
-//                                        var parksArray:Array<PlaceParcel?> = arrayOfNulls<PlaceParcel>(20)
-//                                        for(park in result.results.indices){
-//                                            val parkParcel = convertPlaceDataToParcel(result.results[park])
-//                                            parksArray.set(park,parkParcel)
-////                                    val parkNorthEast = LatLng(park.geometry.viewport.northeast.lat,park.geometry.viewport.northeast.lng)
-////                                    val parkSouthWest = LatLng(park.geometry.viewport.southwest.lat,park.geometry.viewport.southwest.lng)
-////                                    Log.v("Park",park.name +":"+estimateArea(parkNorthEast,parkSouthWest)+"m")
-//                                        }
-//                                        bundle.putParcelableArray(getString(R.string.EXTRA_PARKS_ARRAY),parksArray)
-//                                        bundle.putBoolean(getString(R.string.EXTRA_SELECTING_PARKS),true)
-//                                        loadMapActivity(locationArray,nameArray,wantsFood,wantsDrinks, null)
-//                                    }else{
-//                                        loadMapActivity(locationArray,nameArray,wantsFood,wantsDrinks, null)
-//                                    }
-//                                }else{
-//                                    Log.e("Place Location Error","Could not retreive closest park")
-//                                }
-//                            }
-//                            ,{ error -> error.printStackTrace()}
-//                    )
-//        }
-//
-//    }
-//
-//    private fun convertPlaceDataToParcel(placeData: PlaceData): PlaceParcel{
-//        var placeType = 0
-//        for(type in placeData.types){
-//            when(type){
-//                "park" -> placeType = PlaceParcel.PARK
-//                "liquor_store" -> {
-//                    if(placeType == 0){
-//                        placeType = PlaceParcel.LIQUOR_STORE
-//                    }else if(placeType == PlaceParcel.SUPERMARKET){
-//                        placeType = PlaceParcel.SUPERMARKET_AND_LIQUOR
-//                    }
-//                }
-//                "supermarket" -> {
-//                    if(placeType == 0){
-//                        placeType = PlaceParcel.SUPERMARKET
-//                    }else if(placeType == PlaceParcel.LIQUOR_STORE){
-//                        placeType = PlaceParcel.SUPERMARKET_AND_LIQUOR
-//                    }
-//                }
-//            }
-//        }
-//
-//        val placeParcel = PlaceParcel(placeData.geometry.location.lat,placeData.geometry.location.lng,
-//                placeData.name,null,placeType)
-//        return placeParcel
-//    }
+package com.example.nunya.letsmakeapicnic
+
+import android.app.Fragment
+import android.content.Context
+import android.content.Intent
+import android.location.Location
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.util.*
+
+/**
+ * Created by Stewart Collins on 1/02/18.
+ */
+class CalculateMapPointsFragment : Fragment() {
+
+    private lateinit var listener: OnMapPointsCalculated
+    private val fusedLocationClient: FusedLocationProviderClient by
+      lazy{ LocationServices.getFusedLocationProviderClient(activity)}
+    private lateinit var menuOptions: MenuOptions
+    private lateinit var bundle: Bundle
+
+    companion object {
+        fun newInstance(menuOptions: MenuOptions): CalculateMapPointsFragment{
+            val args = Bundle()
+            args.putParcelable(MenuOptions.EXTRAS_STRING,menuOptions)
+            val fragment = CalculateMapPointsFragment()
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun newInstance(): CalculateMapPointsFragment{
+            return CalculateMapPointsFragment()
+        }
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        if(context is OnMapPointsCalculated){
+            listener = context
+        }else{
+            throw ClassCastException(context.toString() + " must implement OnMapPointsCalculated")
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View?  {
+        super.onCreate(savedInstanceState)
+        val view: View = inflater!!.inflate(R.layout.activity_calculating, container,
+                false)
+        menuOptions = arguments.getParcelable(MenuOptions.EXTRAS_STRING)
+        return view
+    }
+
+    interface OnMapPointsCalculated{
+        fun onMapPointsCalculated(bundle: Bundle)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bundle = Bundle()
+        try{
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                location ->
+                if(location != null){
+                    bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
+                    if(menuOptions.destination != null){
+                        var parkParcel: PlaceParcel = menuOptions.destination as PlaceParcel
+                        bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
+                        if(menuOptions.wantsFood){
+                            getClosestShop(parkParcel,"supermarket")
+                        }
+                        if(menuOptions.wantsDrinks){
+                            getClosestShop(parkParcel,"liquor_store")
+                        }
+                    }else{
+                        getClosestPark(location)
+                    }
+                }else{
+                    Log.v("Location Exception", "Current location not found in CalculatingMapPointsFragment, GPS may be disabled")
+                }
+            }
+        }catch (e: SecurityException){
+            Log.e("Permission Exception", "Location permissions not available in CalculatingMapPointsFragment")
+        }
+    }
+
+    private fun getClosestPark(currentLocation: Location){
+        val latitude = currentLocation.latitude
+        val longitude = currentLocation.longitude
+        val googlePlacesApi = GooglePlacesAPIService.create()
+        val location = "$latitude,$longitude"
+        val placeType = "park"
+        var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        { result ->
+                            if(result.results.size > 0){
+                                if(menuOptions.choosePark) {
+                                    var parksArray:Array<PlaceParcel?> = arrayOfNulls<PlaceParcel>(result.results.size)
+                                    for(park in result.results.indices){
+                                        val parkParcel = convertPlaceDataToParcel(result.results[park])
+                                        parksArray.set(park,parkParcel)
+                                    }
+                                    bundle.putParcelableArray(getString(R.string.EXTRA_PARKS_ARRAY),parksArray)
+                                    bundle.putBoolean(getString(R.string.EXTRA_SELECTING_PARKS),true)
+                                    listener.onMapPointsCalculated(bundle)
+                                }else {
+                                    val park = result.results.first()
+                                    val parkParcel = convertPlaceDataToParcel(park)
+                                    bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
+                                    if(menuOptions.wantsFood){
+                                        getClosestShop(parkParcel,"supermarket")
+                                    }
+                                    if(menuOptions.wantsDrinks){
+                                        getClosestShop(parkParcel,"liquor_store")
+                                    }
+                                    if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
+                                        listener.onMapPointsCalculated(bundle)
+                                    }
+                                }
+                            }else{
+                                Log.e("Place Location Error","Could not retreive parks")
+                            }
+                        }
+                        ,{ error -> error.printStackTrace()}
+                )
+    }
+
+    private fun convertPlaceDataToParcel(placeData: PlaceData): PlaceParcel{
+        var placeType = 0
+        for(type in placeData.types){
+            when(type){
+                "park" -> placeType = PlaceParcel.PARK
+                "liquor_store" -> {
+                    if(placeType == 0){
+                        placeType = PlaceParcel.LIQUOR_STORE
+                    }else if(placeType == PlaceParcel.SUPERMARKET){
+                        placeType = PlaceParcel.SUPERMARKET_AND_LIQUOR
+                    }
+                }
+                "supermarket" -> {
+                    if(placeType == 0){
+                        placeType = PlaceParcel.SUPERMARKET
+                    }else if(placeType == PlaceParcel.LIQUOR_STORE){
+                        placeType = PlaceParcel.SUPERMARKET_AND_LIQUOR
+                    }
+                }
+            }
+        }
+        val placeParcel = PlaceParcel(placeData.geometry.location.lat,placeData.geometry.location.lng,
+                placeData.name,null,placeType)
+        return placeParcel
+    }
+
+    private fun getClosestShop(destination: PlaceParcel, placeType: String){
+        val googlePlacesApi = GooglePlacesAPIService.create()
+        val location = "${destination.latitude},${destination.longitude}"
+        var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        { result ->
+                            if(result.results.size > 0){
+                                val shop = result.results.first()
+                                val shopParcel = convertPlaceDataToParcel(shop)
+                                when (placeType){
+                                    "supermarket" -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
+                                    "liquor_store" -> bundle.putParcelable(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS),shopParcel)
+                                }
+                                getShopOpeningHours(shop.place_id,shopParcel,placeType)
+                            }else{
+                                Log.e("Place Location Error","Could not retreive closest $placeType")
+                            }
+                        }
+                        ,{ error -> error.printStackTrace()}
+                )
+    }
+
+    private fun getShopOpeningHours(placeID: String, shopParcel: PlaceParcel, placeType: String){
+        val googlePlacesApi = GooglePlacesAPIService.create()
+        var observerDisposable = googlePlacesApi.getPlaceDetails(placeID, getString(R.string.google_maps_key))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                        { result ->
+                            var openingHoursArray: Array<String>? = null
+                            if(result.result.opening_hours != null){
+                                shopParcel.addOpeningHours(result.result.opening_hours.weekday_text)
+                                when (placeType){
+                                    "supermarket" -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
+                                    "liquor_store" -> bundle.putParcelable(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS),shopParcel)
+                                }
+                            }
+                            if(isFinished()){
+                                listener.onMapPointsCalculated(bundle)
+                            }
+                        }
+                        ,{ error -> error.printStackTrace()}
+                )
+    }
+
+    private fun isFinished(): Boolean{
+        if(menuOptions.wantsDrinks){
+            if(!bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
+                return false
+            }
+        }
+        if(menuOptions.wantsFood){
+            if(!bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
+                return false
+            }
+        }
+        return true
+    }
+
 //
 //    private fun getClosestSupermarket(locationArray: DoubleArray, nameArray: Array<String>, withDrinks: Boolean){
 //        val googlePlacesApi = GooglePlacesAPIService.create()
@@ -195,6 +247,8 @@
 //                        ,{ error -> error.printStackTrace()}
 //                )
 //    }
+//
+//
 //
 //    private fun addLocationToArray(locationArray: DoubleArray, coordinates: Coordinates): DoubleArray{
 //        val locationLat = coordinates.lat
@@ -357,4 +411,4 @@
 //            Log.v("Place Coordinates", parkLocation)
 //        }
 //    }
-//}
+}

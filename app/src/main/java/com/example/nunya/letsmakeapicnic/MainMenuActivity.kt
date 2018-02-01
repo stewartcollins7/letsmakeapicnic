@@ -11,6 +11,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.ui.PlacePicker
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.android.synthetic.main.activity_main_menu.*
 
 class MainMenuActivity : AppCompatActivity() {
@@ -26,24 +27,17 @@ class MainMenuActivity : AppCompatActivity() {
             Toast.makeText(this,"This app requires access to your location to function",Toast.LENGTH_LONG).show()
             requestLocationPermission()
         }else{
-            val intent = Intent(this, CalculatingActivity::class.java)
-            if(foodCheckBox.isChecked){
-                intent.putExtra(getString(R.string.EXTRA_WANTS_FOOD),true)
-            }else{
-                intent.putExtra(getString(R.string.EXTRA_WANTS_FOOD),false)
-            }
-            if(drinksCheckBox.isChecked){
-                intent.putExtra(getString(R.string.EXTRA_WANTS_DRINKS),true)
-            }else{
-                intent.putExtra(getString(R.string.EXTRA_WANTS_DRINKS),false)
-            }
+            val intent = Intent(this, MainMenuActivity::class.java)
+            val menuOptions = createMenuOptions(false,null,null)
+            intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
             startActivity(intent)
         }
     })
 
       mainMenuButton3.setOnClickListener({
-          val intent = Intent(this,CalculatingActivity::class.java)
-          intent.putExtra(getString(R.string.EXTRA_CHOOSE_PARK),true)
+          val intent = Intent(this,MainMenuActivity::class.java)
+          val menuOptions = createMenuOptions(true,null,null)
+          intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
           startActivity(intent)
       })
 
@@ -54,9 +48,9 @@ class MainMenuActivity : AppCompatActivity() {
         if(requestCode == PLACE_PICKER_REQUEST){
             if(resultCode == RESULT_OK){
                 val place = PlacePicker.getPlace(this, data)
-                val bundle = createOptionsBundle(place)
-                val intent = Intent(this, CalculatingActivity::class.java)
-                intent.putExtras(bundle)
+                val intent = Intent(this, MainMenuActivity::class.java)
+                val menuOptions = createMenuOptions(false,null,place)
+                intent.putExtra(MenuOptions.EXTRAS_STRING,menuOptions)
                 startActivity(intent)
 
 //                var addressText = place.name.toString()
@@ -65,23 +59,21 @@ class MainMenuActivity : AppCompatActivity() {
         }
     }
 
-    private fun createOptionsBundle(place: Place?):Bundle {
-        val bundle = Bundle()
-        if(foodCheckBox.isChecked){
-            bundle.putBoolean(getString(R.string.EXTRA_WANTS_FOOD),true)
-        }else{
-            bundle.putBoolean(getString(R.string.EXTRA_WANTS_FOOD),false)
+    private fun createMenuOptions(choosePark: Boolean, startingLocation: Place?, destination: Place?): MenuOptions{
+        val wantsFood = foodCheckBox.isChecked
+        val wantsDrinks = drinksCheckBox.isChecked
+        var startingLocationParcel: PlaceParcel? = null
+        var destinationParcel: PlaceParcel? = null
+
+        if(startingLocation != null) {
+            startingLocationParcel = PlaceParcel(startingLocation.latLng.latitude, startingLocation.latLng.longitude, startingLocation.name.toString(), null, PlaceParcel.CUSTOM_LOCATION)
         }
-        if(drinksCheckBox.isChecked){
-            bundle.putBoolean(getString(R.string.EXTRA_WANTS_DRINKS),true)
-        }else{
-            bundle.putBoolean(getString(R.string.EXTRA_WANTS_DRINKS),false)
+
+        if(destination != null) {
+            destinationParcel = PlaceParcel(destination.latLng.latitude, destination.latLng.longitude, destination.name.toString(), null, PlaceParcel.CUSTOM_LOCATION)
         }
-        if(place != null){
-            val placeParcel = PlaceParcel(place.latLng.latitude,place.latLng.longitude,place.name.toString(),null,PlaceParcel.CUSTOM_LOCATION)
-            bundle.putParcelable(getString(R.string.EXTRA_CUSTOM_LOCATION),placeParcel)
-        }
-        return bundle
+
+        return MenuOptions(wantsFood,wantsDrinks,choosePark,startingLocationParcel,destinationParcel)
     }
 
     private fun loadPlacePicker(){

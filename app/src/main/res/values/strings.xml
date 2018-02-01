@@ -9,6 +9,7 @@
     <string name="choose_park_button">Choose Park</string>
 
     <string name="EXTRA_PARK_DETAILS">net.stewartcollins.letsmakeapicnic.parkDetails</string>
+    <string name="EXTRA_MENU_OPTIONS">net.stewartcollins.letsmakeapicnic.menyOptions</string>
     <string name="EXTRA_CURRENT_LOCATION">net.stewartcollins.letsmakeapicnic.currentLocation</string>
     <string name="EXTRA_SUPERMARKET_DETAILS">net.stewartcollins.letsmakeapicnic.supermarketDetails</string>
     <string name="EXTRA_LIQUOR_STORE_DETAILS">net.stewartcollins.letsmakeapicnic.liquorStoreDetails</string>
