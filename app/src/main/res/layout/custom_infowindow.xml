@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/colorText"
+    android:paddingLeft="5dp"
+    android:paddingBottom="3dp"
+    android:paddingTop="3dp"
+    android:paddingRight="5dp"
+    android:elevation="5dp"
+
+    >
+
+    <TextView
+        android:id="@+id/infowindow_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:paddingBottom="2dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:text="Title Should Be Here"
+        android:elevation="10dp"/>
+
+    <TextView
+        android:id="@+id/infowindow_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimaryDark"
+        android:text="Address Here\nHours Here" />
+</LinearLayout>
+

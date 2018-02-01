@@ -1,5 +1,6 @@
 package com.example.nunya.letsmakeapicnic
 
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -23,7 +24,7 @@ import java.io.IOException
 import java.util.*
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.LatLng
-
+import kotlin.collections.ArrayList
 
 
 /**
@@ -35,13 +36,14 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
     private val REQUEST_CHECK_SETTINGS = 2
     private lateinit var mMap: GoogleMap
 
-    private var markers: Array<MarkerOptions>? = null
+    private var mapPoints: ArrayList<LatLng> = ArrayList()
     private var selectingParks = false
     private var googleApiClient: GoogleApiClient? = null
     private var isMarkerInfoWindowShown = false
     private var locationRequest: LocationRequest? = null
     private var locationUpdateState = false
     private var lastLocation: Location? = null
+    private lateinit var listener: OnParkSelected
 
     companion object {
         fun newInstance(bundle: Bundle): PicnicMapFragment {
@@ -51,27 +53,37 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
         }
     }
 
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        if(context is OnParkSelected){
+            listener = context
+        }else{
+            throw ClassCastException(context.toString() + " must implement OnParkSelected")
+        }
+    }
+
     override fun onMapLoaded() {
-        val mapPoints: ArrayList<LatLng> = ArrayList()
-        if(markers != null){
-            Log.v("Markers","Not null")
-            val tempMarkers: Array<MarkerOptions> = markers!!
-            for(marker in tempMarkers){
-                mapPoints.add(marker.position)
-            }
-            val latLngBounds = calculateMapBounds(mapPoints)
-            if(latLngBounds != null){
-                Log.v("LatLngBounds","Not null")
-                val padding = 150
-                val mapAnimationHandler: MapAnimationHandler = MapAnimationHandler(mMap)
-                mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,padding), mapAnimationHandler)
-            }
+//        val mapPoints: ArrayList<LatLng> = ArrayList()
+//        if(markers != null){
+//            Log.v("Markers","Not null")
+//            val tempMarkers: Array<MarkerOptions> = markers!!
+//            for(marker in tempMarkers){
+//                mapPoints.add(marker.position)
+//            }
+        val latLngBounds = calculateMapBounds(mapPoints)
+        if(latLngBounds != null){
+            Log.v("LatLngBounds","Not null")
+            val padding = 150
+            val mapAnimationHandler: MapAnimationHandler = MapAnimationHandler(mMap)
+            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,padding), mapAnimationHandler)
         }else{
             mMap.uiSettings.setAllGesturesEnabled(true)
         }
 
         mMap.setOnMarkerClickListener(this)
         mMap.setOnInfoWindowClickListener(this)
+        mMap.setInfoWindowAdapter(CustomInfoWindowAdapter(context))
     }
 
     class MapAnimationHandler(val map: GoogleMap): GoogleMap.CancelableCallback {
@@ -180,29 +192,24 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             snippetText = snippetText.substringBefore(",",snippetText)
             if(placeParcel.openingHours != null){
                 val openingHours = placeParcel.openingHours
-                snippetText += "   :  " + openingHours?.get(getCurrentDayOfTheWeek())
+                snippetText += "\n" + openingHours?.get(getCurrentDayOfTheWeek())
             }
         }
         markerOptions.snippet(snippetText)
 
-        if(markers == null){
-            markers = arrayOf(markerOptions)
-        }else{
-            markers = markers!!.plus(markerOptions)
-        }
+//        if(markers == null){
+//            markers = arrayOf(markerOptions)
+//        }else{
+//            markers = markers!!.plus(markerOptions)
+//        }
         mMap.addMarker(markerOptions)
     }
 
     override fun onInfoWindowClick (p0: Marker){
-//        if(selectingParks){
-//            var parkParcel = PlaceParcel(p0.position.latitude,p0.position.longitude,p0.title,null,PlaceParcel.PARK)
-//            val newIntent = Intent(this, CalculatingActivity::class.java)
-//            newIntent.putExtra(getString(R.string.EXTRA_WANTS_DRINKS),true)
-//            newIntent.putExtra(getString(R.string.EXTRA_WANTS_FOOD),true)
-//            newIntent.putExtra(getString(R.string.EXTRA_PARK_SPECIFIED),true)
-//            newIntent.putExtra(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
-//            startActivity(newIntent)
-//        }
+        if(selectingParks){
+            var parkParcel = PlaceParcel(p0.position.latitude,p0.position.longitude,p0.title,null,PlaceParcel.PARK)
+            listener.onParkSelected(parkParcel)
+        }
     }
 
     private fun getCurrentDayOfTheWeek(): Int{
@@ -293,11 +300,12 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
 
     override fun onPause() {
         super.onPause()
-//        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
     }
 
     override fun onResume() {
         super.onResume()
+        getMapAsync(this)
         if(googleApiClient!!.isConnected && !locationUpdateState){
             startLocationUpdates()
         }
@@ -332,34 +340,50 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
         val bundle = arguments
         val currentLocation = bundle.getParcelable<Location>(getString(R.string.EXTRA_CURRENT_LOCATION))
         val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
-//
+        mapPoints = ArrayList()
+
         selectingParks = bundle.getBoolean(getString(R.string.EXTRA_SELECTING_PARKS),false)
         if(selectingParks){
             val parksArray = bundle.getParcelableArray(getString(R.string.EXTRA_PARKS_ARRAY))
             for(park in parksArray){
                 if(park is PlaceParcel){
                     placeMarkerOnMap(park)
+                    addToLatLngArray(mapPoints,park)
                 }
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng,14f))
         }
         else{
             val parkParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_PARK_DETAILS))
             if(parkParcel == null){
                 Log.v("Park parcel", "Park info is null")
+            }else{
+                placeMarkerOnMap(parkParcel)
+                addToLatLngArray(mapPoints,parkParcel)
+
+                //Don't add to bounds calculation if custom location as may be too far from current location to view well
+                if(parkParcel.type == PlaceParcel.PARK){
+                    mapPoints.add(currentLatLng)
+                }
             }
-            placeMarkerOnMap(parkParcel)
+
             if(bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
                 val liquorStoreParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))
                 placeMarkerOnMap(liquorStoreParcel)
+                addToLatLngArray(mapPoints,liquorStoreParcel)
             }
             if(bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
                 val supermarketParcel = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_SUPERMARKET_DETAILS))
                 placeMarkerOnMap(supermarketParcel)
+                addToLatLngArray(mapPoints,supermarketParcel)
             }
         }
         mMap.setOnMapLoadedCallback(this)
+    }
 
+    private fun addToLatLngArray(array: ArrayList<LatLng>, place: PlaceParcel){
+        val latLng = LatLng(place.latitude,place.longitude)
+        array.add(latLng)
+//        return array
     }
 
     private fun calculateMapBounds(mapPoints: ArrayList<LatLng>): LatLngBounds {
@@ -368,5 +392,9 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             latLngBoundsBuilder.include(mapPoint)
         }
         return latLngBoundsBuilder.build()
+    }
+
+    interface OnParkSelected{
+        fun onParkSelected(park: PlaceParcel)
     }
 }

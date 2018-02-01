@@ -30,7 +30,15 @@ import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MapsActivity : AppCompatActivity(), CalculateMapPointsFragment.OnMapPointsCalculated {
+class MapsActivity : AppCompatActivity(), CalculateMapPointsFragment.OnMapPointsCalculated, PicnicMapFragment.OnParkSelected {
+  private lateinit var menuOptions: MenuOptions
+
+  override fun onParkSelected(park: PlaceParcel) {
+    menuOptions.choosePark = false
+    menuOptions.destination = park
+    loadCalculateFragment(menuOptions)
+  }
+
   override fun onMapPointsCalculated(bundle: Bundle) {
     val mapFragment = PicnicMapFragment.newInstance(bundle)
     supportFragmentManager
@@ -44,7 +52,11 @@ class MapsActivity : AppCompatActivity(), CalculateMapPointsFragment.OnMapPoints
     super.onCreate(savedInstanceState)
 
     setContentView(R.layout.activity_maps)
-    val menuOptions = intent.getParcelableExtra<MenuOptions>(MenuOptions.EXTRAS_STRING)
+    menuOptions = intent.getParcelableExtra<MenuOptions>(MenuOptions.EXTRAS_STRING)
+    loadCalculateFragment(menuOptions)
+  }
+
+  private fun loadCalculateFragment(menuOptions: MenuOptions){
     val calculatePointsFragment = CalculateMapPointsFragment.newInstance(menuOptions)
 
     supportFragmentManager

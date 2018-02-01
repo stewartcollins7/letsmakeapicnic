@@ -9,10 +9,9 @@ import com.google.android.gms.maps.model.LatLng
  */
 data class MenuOptions (val wantsFood: Boolean,
                         val wantsDrinks: Boolean,
-                        val choosePark: Boolean,
+                        var choosePark: Boolean,
                         val startingLocation: PlaceParcel?,
-                        val destination: PlaceParcel?) : Parcelable {
-
+                        var destination: PlaceParcel?) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readByte() != 0.toByte(),
             parcel.readByte() != 0.toByte(),

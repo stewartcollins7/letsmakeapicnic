@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_calculating.*
 import java.util.*
 
 /**
@@ -26,6 +27,8 @@ class CalculateMapPointsFragment : Fragment() {
       lazy{ LocationServices.getFusedLocationProviderClient(activity)}
     private lateinit var menuOptions: MenuOptions
     private lateinit var bundle: Bundle
+    private var shopsRecieved = 0
+    private var shopsRequired = 0
 
     companion object {
         fun newInstance(menuOptions: MenuOptions): CalculateMapPointsFragment{
@@ -56,7 +59,7 @@ class CalculateMapPointsFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val view: View = inflater!!.inflate(R.layout.activity_calculating, container,
                 false)
-        menuOptions = arguments.getParcelable(MenuOptions.EXTRAS_STRING)
+
         return view
     }
 
@@ -66,7 +69,11 @@ class CalculateMapPointsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        menuOptions = arguments.getParcelable(MenuOptions.EXTRAS_STRING)
         bundle = Bundle()
+        if(menuOptions.wantsDrinks)  shopsRequired++
+        if(menuOptions.wantsFood) shopsRequired++
+
         try{
             fusedLocationClient.lastLocation.addOnSuccessListener {
                 location ->
@@ -75,13 +82,20 @@ class CalculateMapPointsFragment : Fragment() {
                     if(menuOptions.destination != null){
                         var parkParcel: PlaceParcel = menuOptions.destination as PlaceParcel
                         bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
-                        if(menuOptions.wantsFood){
-                            getClosestShop(parkParcel,"supermarket")
+                        if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
+                            listener.onMapPointsCalculated(bundle)
                         }
-                        if(menuOptions.wantsDrinks){
-                            getClosestShop(parkParcel,"liquor_store")
+                        else{
+                            calculatingText.text = getString(R.string.calculating_shops)
+                            if(menuOptions.wantsFood){
+                                getClosestShop(parkParcel,"supermarket")
+                            }
+                            if(menuOptions.wantsDrinks){
+                                getClosestShop(parkParcel,"liquor_store")
+                            }
                         }
                     }else{
+                        calculatingText.text = getString(R.string.calculating_parks)
                         getClosestPark(location)
                     }
                 }else{
@@ -118,15 +132,17 @@ class CalculateMapPointsFragment : Fragment() {
                                     val park = result.results.first()
                                     val parkParcel = convertPlaceDataToParcel(park)
                                     bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
+                                    if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
+                                        listener.onMapPointsCalculated(bundle)
+                                    }
+                                    calculatingText.text = getString(R.string.calculating_shops)
                                     if(menuOptions.wantsFood){
                                         getClosestShop(parkParcel,"supermarket")
                                     }
                                     if(menuOptions.wantsDrinks){
                                         getClosestShop(parkParcel,"liquor_store")
                                     }
-                                    if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
-                                        listener.onMapPointsCalculated(bundle)
-                                    }
+
                                 }
                             }else{
                                 Log.e("Place Location Error","Could not retreive parks")
@@ -210,17 +226,26 @@ class CalculateMapPointsFragment : Fragment() {
     }
 
     private fun isFinished(): Boolean{
-        if(menuOptions.wantsDrinks){
-            if(!bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
-                return false
-            }
+        shopsRecieved ++
+        if (shopsRecieved >= shopsRequired){
+            Log.v("isFinished", "true")
+            return true
+        }else {
+            return false
         }
-        if(menuOptions.wantsFood){
-            if(!bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
-                return false
-            }
-        }
-        return true
+//        }
+//        if(menuOptions.wantsDrinks){
+//            if(!bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
+//                return false
+//            }
+//        }
+//        if(menuOptions.wantsFood){
+//            if(!bundle.containsKey(getString(R.string.EXTRA_SUPERMARKET_DETAILS))){
+//                return false
+//            }
+//        }
+//        Log.v("isFinished", "true")
+//        return true
     }
 
 //

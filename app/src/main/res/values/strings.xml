@@ -7,6 +7,9 @@
     <string name="main_menu_button">Closest Park</string>
     <string name="custom_location_button">Custom Location</string>
     <string name="choose_park_button">Choose Park</string>
+    <string name="calculating_parks">Finding Parks</string>
+    <string name="calculating_shops">Finding Shops</string>
+    <string name="calculating_hours">Finding Opening Hours</string>
 
     <string name="EXTRA_PARK_DETAILS">net.stewartcollins.letsmakeapicnic.parkDetails</string>
     <string name="EXTRA_MENU_OPTIONS">net.stewartcollins.letsmakeapicnic.menyOptions</string>
