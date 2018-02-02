@@ -3,6 +3,7 @@ package com.example.nunya.letsmakeapicnic
 import android.os.Parcel
 import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
+import java.time.DayOfWeek
 
 /**
  * Created by Stewart Collins on 1/02/18.
@@ -10,11 +11,17 @@ import com.google.android.gms.maps.model.LatLng
 data class MenuOptions (val wantsFood: Boolean,
                         val wantsDrinks: Boolean,
                         var choosePark: Boolean,
+                        val openNow: Boolean,
+                        val dayOfWeek: Int?,
+                        val showRoute: Boolean,
                         val startingLocation: PlaceParcel?,
                         var destination: PlaceParcel?) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readByte() != 0.toByte(),
             parcel.readByte() != 0.toByte(),
+            parcel.readByte() != 0.toByte(),
+            parcel.readByte() != 0.toByte(),
+            parcel.readValue(Int::class.java.classLoader) as? Int,
             parcel.readByte() != 0.toByte(),
             parcel.readParcelable(PlaceParcel::class.java.classLoader),
             parcel.readParcelable(PlaceParcel::class.java.classLoader)) {
@@ -24,6 +31,9 @@ data class MenuOptions (val wantsFood: Boolean,
         parcel.writeByte(if (wantsFood) 1 else 0)
         parcel.writeByte(if (wantsDrinks) 1 else 0)
         parcel.writeByte(if (choosePark) 1 else 0)
+        parcel.writeByte(if (openNow) 1 else 0)
+        parcel.writeValue(dayOfWeek)
+        parcel.writeByte(if (showRoute) 1 else 0)
         parcel.writeParcelable(startingLocation, flags)
         parcel.writeParcelable(destination, flags)
     }

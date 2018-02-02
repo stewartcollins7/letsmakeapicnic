@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
-import kotlinx.android.synthetic.main.custom_infowindow.view.*
+import kotlinx.android.synthetic.main.infowindow_custom.view.*
 
 /**
  * Created by Stewart Collins on 1/02/18.
@@ -18,7 +18,7 @@ class CustomInfoWindowAdapter(context: Context): GoogleMap.InfoWindowAdapter {
     }
 
     override fun getInfoWindow(p0: Marker?): View? {
-        val infoWindowView = layoutInflater.inflate(R.layout.custom_infowindow,null)
+        val infoWindowView = layoutInflater.inflate(R.layout.infowindow_custom,null)
         if(p0 != null){
             infoWindowView.infowindow_name.text = p0.title
             infoWindowView.infowindow_details.text = p0.snippet

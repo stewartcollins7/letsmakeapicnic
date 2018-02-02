@@ -31,7 +31,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".MainMenuActivity">
+        <activity android:name=".MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,16 +41,10 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"
-            android:parentActivityName=".MainMenuActivity"
+            android:parentActivityName=".MenuActivity"
             />
 
 
-        <activity android:name=".PlaceSelectActivity"
-            android:parentActivityName=".MainMenuActivity"/>
-        <activity android:name=".CalculatingActivity"
-            android:parentActivityName=".MainMenuActivity">
-
-        </activity>
     </application>
 
 </manifest>

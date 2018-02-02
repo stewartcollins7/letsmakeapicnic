@@ -5,7 +5,7 @@
     <string name="main_menu_food_option">via Supermarket</string>
     <string name="main_menu_drinks_option">via Liquor Store</string>
     <string name="main_menu_button">Closest Park</string>
-    <string name="custom_location_button">Custom Location</string>
+    <string name="picnic_planner_button">Plan Picnic</string>
     <string name="choose_park_button">Choose Park</string>
     <string name="calculating_parks">Finding Parks</string>
     <string name="calculating_shops">Finding Shops</string>
@@ -23,4 +23,15 @@
     <string name="EXTRA_PARK_SPECIFIED">net.stewartcollins.letsmakeapicnic.parkSpecified</string>
     <string name="EXTRA_CUSTOM_LOCATION">net.stewartcollins.letsmakeapicnic.customLocation</string>
     <string name="EXTRA_CHOOSE_PARK">net.stewartcollins.letsmakeapicninc.choosePark</string>
+
+    <string-array name="picnic_day_array">
+        <item>Open Now</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
 </resources>

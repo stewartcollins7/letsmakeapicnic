@@ -6,54 +6,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
-    tools:context="com.example.nunya.letsmakeapicnic.MainMenuActivity"
+    tools:context="com.example.nunya.letsmakeapicnic.MenuActivity"
     >
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="139dp"
         android:layout_height="131dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.261"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
         app:srcCompat="@drawable/picnic2039993_640" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="36dp"
         android:text="@string/main_menu_title"
         android:textColor="@color/colorText"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <CheckBox
         android:id="@+id/foodCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/MenuCheckbox"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
-        android:textSize="20dp"
-        android:text="@string/main_menu_food_option"
-        android:checked="true"
         android:buttonTint="@color/colorAccent"
-        android:textColor="@color/colorText"
+        android:text="@string/main_menu_food_option"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
@@ -65,67 +58,61 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="20dp"
         android:textSize="20dp"
-        android:text="@string/main_menu_drinks_option"
         android:buttonTint="@color/colorAccent"
         android:textColor="@color/colorText"
+        android:text="@string/main_menu_drinks_option"
         android:checked="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/foodCheckBox" />
 
     <Button
-        android:id="@+id/mainMenuButton"
+        android:id="@+id/picnicPlannerButton"
+        style="@style/MenuButton"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="8dp"
+        android:text="@string/picnic_planner_button"
         android:layout_marginStart="8dp"
-        android:background="@color/colorPrimaryDark"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:text="@string/custom_location_button"
-        android:textColor="@color/colorText"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/mainMenuButton2"
+        android:id="@+id/picnicNowButton"
+        style="@style/MenuButton"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/colorPrimaryDark"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:text="@string/main_menu_button"
-        android:textColor="@color/colorText"
-        app:layout_constraintBottom_toTopOf="@+id/mainMenuButton3"
+        app:layout_constraintBottom_toTopOf="@+id/chooseParkButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/drinksCheckBox" />
+        app:layout_constraintTop_toBottomOf="@+id/drinksCheckBox"
+        app:layout_constraintVertical_bias="0.843" />
 
     <Button
-        android:id="@+id/mainMenuButton3"
+        android:id="@+id/chooseParkButton"
+        style="@style/MenuButton"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="84dp"
-        android:background="@color/colorPrimaryDark"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:text="@string/choose_park_button"
-        android:textColor="@color/colorText"
-        app:layout_constraintBottom_toTopOf="@+id/mainMenuButton"
+        app:layout_constraintBottom_toTopOf="@+id/picnicPlannerButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/drinksCheckBox" />
+        app:layout_constraintStart_toStartOf="parent" />
+        <!--android:textColor="@color/colorText"-->
+        <!--android:layout_marginBottom="8dp"-->
+        <!--android:layout_marginEnd="8dp"-->
+        <!--android:layout_marginStart="8dp"-->
+        <!--android:layout_marginTop="84dp"-->
+        <!--android:background="@color/colorPrimaryDark"-->
+        <!--android:paddingLeft="8dp"-->
+        <!--android:paddingRight="8dp"-->
+        <!--android:textAppearance="@style/MenuButton"-->
+
 
 
 </android.support.constraint.ConstraintLayout>
