@@ -22,7 +22,6 @@ import kotlinx.android.synthetic.main.fragment_main_menu.*
  */
 class MainMenuFragment: Fragment() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
-    private val PLACE_PICKER_REQUEST = 2
     private lateinit var listener: OnPicnicPlannerPressed
 
     override fun onAttach(context: Context?) {
@@ -40,17 +39,6 @@ class MainMenuFragment: Fragment() {
         val view: View = inflater!!.inflate(R.layout.fragment_main_menu, container,
                 false)
         return view
-    }
-
-    private fun loadPlacePicker(){
-        val placePickerIntent = PlacePicker.IntentBuilder().build(activity)
-        try{
-            startActivityForResult(placePickerIntent, PLACE_PICKER_REQUEST)
-        }catch (e: GooglePlayServicesNotAvailableException){
-            e.printStackTrace()
-        }catch (e: GooglePlayServicesRepairableException){
-            e.printStackTrace()
-        }
     }
 
     private fun requestLocationPermission(){

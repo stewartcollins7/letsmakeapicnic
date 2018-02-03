@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -28,7 +29,9 @@ class CalculateMapPointsFragment : Fragment() {
     private lateinit var bundle: Bundle
     private var shopsRecieved = 0
     private var shopsRequired = 0
-    private lateinit var currentLocation: Location
+    private var finalRequestsRequired = 0
+    private var finalRequestsRecieved = 0
+    private lateinit var currentLocation: LatLng
     private lateinit var destinationLatLng: LatLng
     private val shopsArray: ArrayList<PlaceDataResult> = ArrayList()
 
@@ -71,48 +74,57 @@ class CalculateMapPointsFragment : Fragment() {
         if(menuOptions.wantsDrinks)  shopsRequired++
         if(menuOptions.wantsFood) shopsRequired++
 
-        try{
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                location ->
-                if(location != null){
-                    currentLocation = location
-                    bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
-                    if(menuOptions.destination != null){
-                        var destinationParcel: PlaceParcel = menuOptions.destination as PlaceParcel
-                        destinationLatLng = LatLng(destinationParcel.latitude,destinationParcel.longitude)
-                        bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),destinationParcel)
-                        if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
-                            listener.onMapPointsCalculated(bundle)
-                        }
-                        else{
-                            calculatingText.text = getString(R.string.calculating_shops)
-                            if(menuOptions.wantsFood){
-//                                getClosestShop("supermarket")
-                                getShops("supermarket")
-                            }
-                            if(menuOptions.wantsDrinks){
-//                                getClosestShop("liquor_store")
-                                getShops("liquor_store")
-                            }
-                        }
+        if(menuOptions.startingLocation == null){
+            try{
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    location ->
+                    if(location != null){
+                        currentLocation = LatLng(location.latitude,location.longitude)
+                        bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
+                        Log.v("Current Location:",currentLocation.toString())
+                        getDestination()
                     }else{
-                        calculatingText.text = getString(R.string.calculating_parks)
-                        getClosestPark(location)
+                        Log.v("Location Exception", "Current location not found in CalculatingMapPointsFragment, GPS may be disabled")
                     }
-                }else{
-                    Log.v("Location Exception", "Current location not found in CalculatingMapPointsFragment, GPS may be disabled")
+                }
+            }catch (e: SecurityException){
+                Log.e("Permission Exception", "Location permissions not available in CalculatingMapPointsFragment")
+            }
+        }else{
+            currentLocation = LatLng(menuOptions.startingLocation!!.latitude,menuOptions.startingLocation!!.longitude)
+            bundle.putParcelable(getString(R.string.EXTRA_STARTING_LOCATION),menuOptions.startingLocation)
+            getDestination()
+        }
+
+
+    }
+
+    private fun getDestination(){
+        if(menuOptions.destination != null){
+            var destinationParcel: PlaceParcel = menuOptions.destination as PlaceParcel
+            destinationLatLng = LatLng(destinationParcel.latitude,destinationParcel.longitude)
+            bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),destinationParcel)
+            if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
+                listener.onMapPointsCalculated(bundle)
+            }
+            else{
+                calculatingText.text = getString(R.string.calculating_shops)
+                if(menuOptions.wantsFood){
+                    getShops("supermarket")
+                }
+                if(menuOptions.wantsDrinks){
+                    getShops("liquor_store")
                 }
             }
-        }catch (e: SecurityException){
-            Log.e("Permission Exception", "Location permissions not available in CalculatingMapPointsFragment")
+        }else{
+            calculatingText.text = getString(R.string.calculating_parks)
+            getClosestPark()
         }
     }
 
-    private fun getClosestPark(currentLocation: Location){
-        val latitude = currentLocation.latitude
-        val longitude = currentLocation.longitude
+    private fun getClosestPark(){
         val googlePlacesApi = GooglePlacesAPIService.create()
-        val location = "$latitude,$longitude"
+        val location = "${currentLocation.latitude},${currentLocation.longitude}"
         val placeType = "park"
         var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -133,6 +145,7 @@ class CalculateMapPointsFragment : Fragment() {
                                     val park = result.results.first()
                                     val parkParcel = convertPlaceDataToParcel(park)
                                     destinationLatLng = LatLng(parkParcel.latitude,parkParcel.longitude)
+                                    Log.v("Destination:",destinationLatLng.toString())
                                     bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
                                     if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
                                         listener.onMapPointsCalculated(bundle)
@@ -200,28 +213,64 @@ class CalculateMapPointsFragment : Fragment() {
                 )
     }
 
-    private fun getClosestShop(placeType: String){
-        val googlePlacesApi = GooglePlacesAPIService.create()
-        val location = "${destinationLatLng.latitude},${destinationLatLng.longitude}"
-        var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { result ->
-                            if(result.results.size > 0){
-                                val shop = result.results.first()
-                                val shopParcel = convertPlaceDataToParcel(shop)
-                                when (placeType){
-                                    "supermarket" -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
-                                    "liquor_store" -> bundle.putParcelable(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS),shopParcel)
+    private fun getDirections(waypoint1: PlaceParcel?, waypoint2: PlaceParcel?){
+        val googleDirectionsApi = GoogleDirectionsAPIService.create()
+        val start = "${currentLocation.latitude},${currentLocation.longitude}"
+        val destination = "${destinationLatLng.latitude},${destinationLatLng.longitude}"
+        var waypoints: String? = null
+        if(waypoint1 != null){
+            waypoints = "optimize:true|${waypoint1.latitude},${waypoint1.longitude}"
+            if(waypoint2 != null){
+                waypoints += "|${waypoint2.latitude},${waypoint2.longitude}"
+            }
+        }
+        if(waypoints == null){
+            val observerDisposable = googleDirectionsApi.getRouteBetweenTwoPoints(start,getString(R.string.google_maps_key),destination)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(
+                            { result ->
+                                if(result != null){
+                                    routeRecieved(result)
                                 }
-                                getShopOpeningHours(shop.place_id,shopParcel)
-                            }else{
-                                Log.e("Place Location Error","Could not retreive closest $placeType")
                             }
-                        }
-                        ,{ error -> error.printStackTrace()}
-                )
+                    )
+        }else{
+            val observerDisposable = googleDirectionsApi.getRouteWithWaypointsPoints(start,getString(R.string.google_maps_key),destination,waypoints)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(
+                            { result ->
+                                if(result != null){
+                                    routeRecieved(result)
+                                }
+                            }
+                    )
+        }
+    }
+
+    private fun routeRecieved(routesData: RoutesDataResponse){
+        val route = routesData.routes[0]
+        val routeArray = convertRouteToLatLngArray(route)
+        bundle.putParcelableArray(getString(R.string.EXTRA_ROUTE),routeArray)
+        if(isFinished()){
+            listener.onMapPointsCalculated(bundle)
+        }
+    }
+
+    private fun convertRouteToLatLngArray(route: Route): Array<LatLng>{
+        val arrayList = ArrayList<LatLng>()
+        for(leg in route.legs){
+            for(step in leg.steps){
+                val point = LatLng(step.start_location.lat,step.start_location.lng)
+                arrayList.add(point)
+            }
+        }
+        val finalStep = route.legs.last().steps.last()
+        val finalPoint = LatLng(finalStep.end_location.lat,finalStep.end_location.lng)
+        arrayList.add(finalPoint)
+        val array: Array<LatLng> = arrayList.toTypedArray()
+        return array
     }
 
     private fun getShopOpeningHours(placeID: String, shopParcel: PlaceParcel){
@@ -252,31 +301,40 @@ class CalculateMapPointsFragment : Fragment() {
         shopsArray.add(shops)
         shopsRecieved ++
         if (shopsRecieved >= shopsRequired){
-            shopsRecieved = 0
-            val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
+            finalRequestsRequired = shopsRequired
+            if(menuOptions.showRoute){
+                finalRequestsRequired++
+            }
+            var shop1Parcel: PlaceParcel? = null
+            var shop2Parcel: PlaceParcel? = null
             if(shopsRequired == 2){
                 val shopsType1 = shopsArray.get(0)
                 val shopsType2 = shopsArray.get(1)
-                val (shop1Index,shop2Index) = DistanceCalculator.getBestTwoShopIndexes(currentLatLng,destinationLatLng,shopsType1,shopsType2)
+                val (shop1Index,shop2Index) = DistanceCalculator.getBestTwoShopIndexes(currentLocation,destinationLatLng,shopsType1,shopsType2)
                 val shop1 = shopsType1.results[shop1Index]
                 val shop2 = shopsType2.results[shop2Index]
-                val shop1Parcel = convertPlaceDataToParcel(shop1)
-                val shop2Parcel = convertPlaceDataToParcel(shop2)
+                shop1Parcel = convertPlaceDataToParcel(shop1)
+                Log.v("Shop1:",shop1Parcel.latitude.toString() +","+shop1Parcel.longitude.toString())
+                shop2Parcel = convertPlaceDataToParcel(shop2)
+                Log.v("Shop2:",shop2Parcel.latitude.toString() +","+shop2Parcel.longitude.toString())
                 getShopOpeningHours(shop1.place_id,shop1Parcel)
                 getShopOpeningHours(shop2.place_id,shop2Parcel)
             }else if(shopsRequired == 1){
                 val shops = shopsArray.get(0)
-                val shopIndex = DistanceCalculator.getBestShopIndex(shops,currentLatLng,destinationLatLng)
+                val shopIndex = DistanceCalculator.getBestShopIndex(shops,currentLocation,destinationLatLng)
                 val shop = shops.results[shopIndex]
-                val shopParcel = convertPlaceDataToParcel(shop)
-                getShopOpeningHours(shop.place_id,shopParcel)
+                shop1Parcel = convertPlaceDataToParcel(shop)
+                getShopOpeningHours(shop.place_id,shop1Parcel)
+            }
+            if(menuOptions.showRoute){
+                getDirections(shop1Parcel,shop2Parcel)
             }
         }
     }
 
     private fun isFinished(): Boolean{
-        shopsRecieved ++
-        if (shopsRecieved >= shopsRequired){
+        finalRequestsRecieved ++
+        if (finalRequestsRecieved >= finalRequestsRequired){
             Log.v("isFinished", "true")
             return true
         }else {

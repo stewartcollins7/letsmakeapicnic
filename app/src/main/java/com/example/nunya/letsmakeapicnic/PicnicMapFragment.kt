@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
@@ -338,9 +339,17 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
         mMap = googleMap
 
         val bundle = arguments
-        val currentLocation = bundle.getParcelable<Location>(getString(R.string.EXTRA_CURRENT_LOCATION))
-        val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
         mapPoints = ArrayList()
+
+        if(bundle.containsKey(getString(R.string.EXTRA_STARTING_LOCATION))){
+            val startingLocation = bundle.getParcelable<PlaceParcel>(getString(R.string.EXTRA_STARTING_LOCATION))
+            addToLatLngArray(mapPoints,startingLocation)
+            placeMarkerOnMap(startingLocation)
+        }else if(bundle.containsKey(getString(R.string.EXTRA_CURRENT_LOCATION))){
+            val currentLocation = bundle.getParcelable<Location>(getString(R.string.EXTRA_CURRENT_LOCATION))
+            val currentLatLng = LatLng(currentLocation.latitude,currentLocation.longitude)
+            mapPoints.add(currentLatLng)
+        }
 
         selectingParks = bundle.getBoolean(getString(R.string.EXTRA_SELECTING_PARKS),false)
         if(selectingParks){
@@ -359,11 +368,6 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             }else{
                 placeMarkerOnMap(parkParcel)
                 addToLatLngArray(mapPoints,parkParcel)
-
-                //Don't add to bounds calculation if custom location as may be too far from current location to view well
-                if(parkParcel.type == PlaceParcel.PARK){
-                    mapPoints.add(currentLatLng)
-                }
             }
 
             if(bundle.containsKey(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS))){
@@ -378,6 +382,15 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             }
         }
         mMap.setOnMapLoadedCallback(this)
+        if(bundle.containsKey(getString(R.string.EXTRA_ROUTE))){
+            val route: Array<LatLng> = bundle.getParcelableArray(getString(R.string.EXTRA_ROUTE)) as Array<LatLng>
+            val lineOptions = PolylineOptions()
+            val routeMutableList = route.toMutableList()
+            lineOptions.addAll(routeMutableList)
+            lineOptions.width(10f)
+            lineOptions.color(Color.MAGENTA)
+            mMap.addPolyline(lineOptions)
+        }
     }
 
     private fun addToLatLngArray(array: ArrayList<LatLng>, place: PlaceParcel){
