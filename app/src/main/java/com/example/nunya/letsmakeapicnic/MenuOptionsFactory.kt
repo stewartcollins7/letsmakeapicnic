@@ -9,12 +9,12 @@ import kotlinx.android.synthetic.main.fragment_main_menu.*
 class MenuOptionsFactory {
     companion object {
         public fun createDefaultMenuOptions(choosePark: Boolean, wantsFood: Boolean, wantsDrinks: Boolean): MenuOptions{
-            val openNow = true
             val showRoute = false
-            return MenuOptions(wantsFood,wantsDrinks,choosePark,openNow,null,showRoute,null,null)
+            val noStartPoint = false
+            return MenuOptions(wantsFood,wantsDrinks,choosePark,noStartPoint,null,showRoute,null,null)
         }
 
-        public fun createMenuOptions(wantsFood: Boolean, wantsDrinks: Boolean, choosePark: Boolean, openNow: Boolean, chosenDay: Int?, showRoute: Boolean,
+        public fun createMenuOptions(wantsFood: Boolean, wantsDrinks: Boolean, choosePark: Boolean, noStartPoint: Boolean, chosenDay: Int?, showRoute: Boolean,
                                       startingLocation: Place?, destination: Place?): MenuOptions{
             var startingLocationParcel: PlaceParcel? = null
             var destinationParcel: PlaceParcel? = null
@@ -27,7 +27,7 @@ class MenuOptionsFactory {
                 destinationParcel = PlaceParcel(destination.latLng.latitude, destination.latLng.longitude, destination.name.toString(), null, PlaceParcel.CUSTOM_LOCATION)
             }
 
-            return MenuOptions(wantsFood,wantsDrinks,choosePark,openNow,chosenDay,showRoute,startingLocationParcel,destinationParcel)
+            return MenuOptions(wantsFood,wantsDrinks,choosePark,noStartPoint,chosenDay,showRoute,startingLocationParcel,destinationParcel)
         }
     }
 }

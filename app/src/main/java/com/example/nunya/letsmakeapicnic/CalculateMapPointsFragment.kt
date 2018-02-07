@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_calculate_map_points.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -75,21 +76,28 @@ class CalculateMapPointsFragment : Fragment() {
         if(menuOptions.wantsFood) shopsRequired++
 
         if(menuOptions.startingLocation == null){
-            try{
-                fusedLocationClient.lastLocation.addOnSuccessListener {
-                    location ->
-                    if(location != null){
-                        currentLocation = LatLng(location.latitude,location.longitude)
-                        bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
-                        Log.v("Current Location:",currentLocation.toString())
-                        getDestination()
-                    }else{
-                        Log.v("Location Exception", "Current location not found in CalculatingMapPointsFragment, GPS may be disabled")
+            if(menuOptions.noStartPoint){
+                bundle.putBoolean(getString(R.string.EXTRA_NO_START_POINT),true)
+                getDestination()
+
+            }else{
+                try{
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        location ->
+                        if(location != null){
+                            currentLocation = LatLng(location.latitude,location.longitude)
+                            bundle.putParcelable(getString(R.string.EXTRA_CURRENT_LOCATION),location)
+                            Log.v("Current Location:",currentLocation.toString())
+                            getDestination()
+                        }else{
+                            Log.v("Location Exception", "Current location not found in CalculatingMapPointsFragment, GPS may be disabled")
+                        }
                     }
+                }catch (e: SecurityException){
+                    Log.e("Permission Exception", "Location permissions not available in CalculatingMapPointsFragment")
                 }
-            }catch (e: SecurityException){
-                Log.e("Permission Exception", "Location permissions not available in CalculatingMapPointsFragment")
             }
+
         }else{
             currentLocation = LatLng(menuOptions.startingLocation!!.latitude,menuOptions.startingLocation!!.longitude)
             bundle.putParcelable(getString(R.string.EXTRA_STARTING_LOCATION),menuOptions.startingLocation)
@@ -103,9 +111,16 @@ class CalculateMapPointsFragment : Fragment() {
         if(menuOptions.destination != null){
             var destinationParcel: PlaceParcel = menuOptions.destination as PlaceParcel
             destinationLatLng = LatLng(destinationParcel.latitude,destinationParcel.longitude)
+            if(menuOptions.noStartPoint){
+                currentLocation = destinationLatLng
+            }
             bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),destinationParcel)
             if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
-                listener.onMapPointsCalculated(bundle)
+                if(menuOptions.showRoute){
+                    getDirections(null,null)
+                }else{
+                    listener.onMapPointsCalculated(bundle)
+                }
             }
             else{
                 calculatingText.text = getString(R.string.calculating_shops)
@@ -148,9 +163,16 @@ class CalculateMapPointsFragment : Fragment() {
                                     Log.v("Destination:",destinationLatLng.toString())
                                     bundle.putParcelable(getString(R.string.EXTRA_PARK_DETAILS),parkParcel)
                                     if(!menuOptions.wantsFood && !menuOptions.wantsDrinks){
-                                        listener.onMapPointsCalculated(bundle)
+                                        if(menuOptions.showRoute){
+                                            getDirections(null,null)
+                                        }else{
+                                            listener.onMapPointsCalculated(bundle)
+                                        }
+
+                                    }else{
+                                        calculatingText.text = getString(R.string.calculating_shops)
                                     }
-                                    calculatingText.text = getString(R.string.calculating_shops)
+
                                     if(menuOptions.wantsFood){
 //                                        getClosestShop("supermarket")
                                         getShops("supermarket")
@@ -198,19 +220,24 @@ class CalculateMapPointsFragment : Fragment() {
     private fun getShops(placeType: String){
         val googlePlacesApi = GooglePlacesAPIService.create()
         val location = "${destinationLatLng.latitude},${destinationLatLng.longitude}"
-        var observerDisposable = googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                        { result ->
-                            if(result.results.size > 0){
-                                shopsRecieved(result)
-                            }else{
-                                Log.e("Place Location Error","Could not retreive closest $placeType")
+
+        var observerDisposable = if(menuOptions.dayOfWeek == null) {
+                                    googlePlacesApi.searchNearbyOpenPlaces(location, getString(R.string.google_maps_key),placeType)
+                                }else {
+                                    googlePlacesApi.searchNearbyPlaces(location, getString(R.string.google_maps_key),placeType)
+                                }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(
+                            { result ->
+                                if(result.results.size > 0){
+                                    shopsRecieved(result)
+                                }else{
+                                    Log.e("Place Location Error","Could not retreive closest $placeType")
+                                }
                             }
-                        }
-                        ,{ error -> error.printStackTrace()}
-                )
+                            ,{ error -> error.printStackTrace()}
+                    )
     }
 
     private fun getDirections(waypoint1: PlaceParcel?, waypoint2: PlaceParcel?){
@@ -218,6 +245,7 @@ class CalculateMapPointsFragment : Fragment() {
         val start = "${currentLocation.latitude},${currentLocation.longitude}"
         val destination = "${destinationLatLng.latitude},${destinationLatLng.longitude}"
         var waypoints: String? = null
+        calculatingText.text = "Getting Route"
         if(waypoint1 != null){
             waypoints = "optimize:true|${waypoint1.latitude},${waypoint1.longitude}"
             if(waypoint2 != null){
@@ -247,6 +275,23 @@ class CalculateMapPointsFragment : Fragment() {
                             }
                     )
         }
+    }
+
+    private fun getCurrentDayOfTheWeek(): Int{
+        val calendar = Calendar.getInstance()
+        val currentCalendarFormatDay = calendar.get(Calendar.DAY_OF_WEEK)
+        var currentGoogleFormatDay = -1
+        when (currentCalendarFormatDay) {
+            Calendar.MONDAY -> currentGoogleFormatDay = 0
+            Calendar.TUESDAY -> currentGoogleFormatDay = 1
+            Calendar.WEDNESDAY -> currentGoogleFormatDay = 2
+            Calendar.THURSDAY -> currentGoogleFormatDay = 3
+            Calendar.FRIDAY -> currentGoogleFormatDay = 4
+            Calendar.SATURDAY -> currentGoogleFormatDay = 5
+            Calendar.SUNDAY -> currentGoogleFormatDay = 6
+        }
+
+        return currentGoogleFormatDay
     }
 
     private fun routeRecieved(routesData: RoutesDataResponse){
@@ -280,14 +325,20 @@ class CalculateMapPointsFragment : Fragment() {
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         { result ->
-                            var openingHoursArray: Array<String>? = null
+                            var openingHoursString = "No opening hours found"
                             if(result.result.opening_hours != null){
-                                shopParcel.addOpeningHours(result.result.opening_hours.weekday_text)
-                                when (shopParcel.type){
-                                    PlaceParcel.SUPERMARKET -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
-                                    PlaceParcel.SUPERMARKET_AND_LIQUOR -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
-                                    PlaceParcel.LIQUOR_STORE -> bundle.putParcelable(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS),shopParcel)
+                                if(menuOptions.dayOfWeek == null){
+                                    openingHoursString = result.result.opening_hours.weekday_text[getCurrentDayOfTheWeek()]
+                                }else{
+                                    val dayIndex = (menuOptions.dayOfWeek as Int) - 1
+                                    openingHoursString = result.result.opening_hours.weekday_text[dayIndex]
                                 }
+                            }
+                            shopParcel.openingHours = openingHoursString
+                            when (shopParcel.type){
+                                PlaceParcel.SUPERMARKET -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
+                                PlaceParcel.SUPERMARKET_AND_LIQUOR -> bundle.putParcelable(getString(R.string.EXTRA_SUPERMARKET_DETAILS),shopParcel)
+                                PlaceParcel.LIQUOR_STORE -> bundle.putParcelable(getString(R.string.EXTRA_LIQUOR_STORE_DETAILS),shopParcel)
                             }
                             if(isFinished()){
                                 listener.onMapPointsCalculated(bundle)

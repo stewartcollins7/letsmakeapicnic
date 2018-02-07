@@ -105,8 +105,8 @@
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:buttonTint="@color/colorAccent"
             android:checked="false"
+            android:buttonTint="@color/colorAccent"
             android:text="Show Route"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/plannerRouteOptionsHeading" />
@@ -117,7 +117,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Start Point:Current Location"
+            android:text="Start Point: Current Location"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/plannerShowRouteCheckbox" />
@@ -171,7 +171,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
-            android:text="Destination:Closest Park"
+            android:text="Destination: Closest Park"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/startPointRadioGroup" />

@@ -75,7 +75,7 @@ class PicnicPlannerFragment : Fragment() {
                     dayOfTheWeek = openingHoursSpinner.selectedItemPosition
                 }
                 val menuOptions = MenuOptionsFactory.createMenuOptions(plannerWantsFood.isChecked,plannerWantsDrinks.isChecked,
-                        chooseParkSelected,openNow,dayOfTheWeek,plannerShowRouteCheckbox.isChecked,startPoint,destination)
+                        chooseParkSelected,noStartPointSelected,dayOfTheWeek,plannerShowRouteCheckbox.isChecked,startPoint,destination)
                 val intent = Intent(context,MapsActivity::class.java)
                 intent.putExtra(getString(R.string.EXTRA_MENU_OPTIONS),menuOptions)
                 startActivity(intent)

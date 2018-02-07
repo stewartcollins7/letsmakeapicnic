@@ -12,7 +12,7 @@
   <style name="MenuHeading">
     <item name="android:textColor">@color/colorTextWithBackground</item>
     <item name="android:background">@color/colorPrimaryDark</item>
-    <item name="android:textSize">25dp</item>
+    <item name="android:textSize">30dp</item>
   </style>
 
   <style name="MenuButton">
@@ -27,7 +27,7 @@
   <style name="MenuSubheading">
     <item name="android:textColor">@color/colorText</item>
     <item name="android:background">@color/colorPrimaryDark</item>
-    <item name="android:textSize">16dp</item>
+    <item name="android:textSize">20dp</item>
     <item name="android:paddingTop">4dp</item>
     <item name="android:paddingBottom">4dp</item>
     <item name="android:paddingLeft">12dp</item>

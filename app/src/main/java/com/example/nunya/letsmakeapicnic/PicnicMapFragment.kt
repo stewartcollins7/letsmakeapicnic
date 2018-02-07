@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
@@ -65,13 +66,6 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
     }
 
     override fun onMapLoaded() {
-//        val mapPoints: ArrayList<LatLng> = ArrayList()
-//        if(markers != null){
-//            Log.v("Markers","Not null")
-//            val tempMarkers: Array<MarkerOptions> = markers!!
-//            for(marker in tempMarkers){
-//                mapPoints.add(marker.position)
-//            }
         val latLngBounds = calculateMapBounds(mapPoints)
         if(latLngBounds != null){
             Log.v("LatLngBounds","Not null")
@@ -85,6 +79,7 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
         mMap.setOnMarkerClickListener(this)
         mMap.setOnInfoWindowClickListener(this)
         mMap.setInfoWindowAdapter(CustomInfoWindowAdapter(context))
+        Toast.makeText(context,"Tap the markers for more information",Toast.LENGTH_LONG).show()
     }
 
     class MapAnimationHandler(val map: GoogleMap): GoogleMap.CancelableCallback {
@@ -192,8 +187,8 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             snippetText = getAddress(location)
             snippetText = snippetText.substringBefore(",",snippetText)
             if(placeParcel.openingHours != null){
-                val openingHours = placeParcel.openingHours
-                snippetText += "\n" + openingHours?.get(getCurrentDayOfTheWeek())
+                val openingHoursString = placeParcel.openingHours
+                snippetText += "\n" + openingHoursString
             }
         }
         markerOptions.snippet(snippetText)

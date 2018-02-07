@@ -9,26 +9,21 @@ import android.os.Parcelable
 class PlaceParcel(val latitude: Double,
                   val longitude: Double,
                   val name: String,
-                  var openingHours: Array<String>?,
+                  var openingHours: String?,
                   val type: Int) : Parcelable {
-
     constructor(parcel: Parcel) : this(
             parcel.readDouble(),
             parcel.readDouble(),
             parcel.readString(),
-            parcel.createStringArray(),
+            parcel.readString(),
             parcel.readInt()) {
-    }
-
-    fun addOpeningHours(openingHours: Array<String>){
-        this.openingHours = openingHours
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)
         parcel.writeString(name)
-        parcel.writeStringArray(openingHours)
+        parcel.writeString(openingHours)
         parcel.writeInt(type)
     }
 
@@ -36,7 +31,7 @@ class PlaceParcel(val latitude: Double,
         return 0
     }
 
-    companion object {
+    companion object{
         val PARK = 1
         val LIQUOR_STORE = 2
         val SUPERMARKET = 3

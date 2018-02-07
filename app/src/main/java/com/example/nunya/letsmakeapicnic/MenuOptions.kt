@@ -11,7 +11,7 @@ import java.time.DayOfWeek
 data class MenuOptions (val wantsFood: Boolean,
                         val wantsDrinks: Boolean,
                         var choosePark: Boolean,
-                        val openNow: Boolean,
+                        val noStartPoint: Boolean,
                         val dayOfWeek: Int?,
                         val showRoute: Boolean,
                         val startingLocation: PlaceParcel?,
@@ -31,7 +31,7 @@ data class MenuOptions (val wantsFood: Boolean,
         parcel.writeByte(if (wantsFood) 1 else 0)
         parcel.writeByte(if (wantsDrinks) 1 else 0)
         parcel.writeByte(if (choosePark) 1 else 0)
-        parcel.writeByte(if (openNow) 1 else 0)
+        parcel.writeByte(if (noStartPoint) 1 else 0)
         parcel.writeValue(dayOfWeek)
         parcel.writeByte(if (showRoute) 1 else 0)
         parcel.writeParcelable(startingLocation, flags)

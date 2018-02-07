@@ -11,7 +11,7 @@ import retrofit2.http.Query
  * Created by Stewart Collins on 3/02/18.
  */
 interface GoogleDirectionsAPIService {
-    @GET("json?")
+    @GET("json?mode=walking?")
     fun getRouteBetweenTwoPoints(@Query("origin") startLatLng: String, @Query("key") mapsKey: String, @Query("destination") destinationLatLng: String): Observable<RoutesDataResponse>
 
     @GET("json?")

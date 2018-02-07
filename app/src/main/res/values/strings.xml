@@ -25,6 +25,8 @@
     <string name="EXTRA_CHOOSE_PARK">net.stewartcollins.letsmakeapicninc.choosePark</string>
     <string name="EXTRA_STARTING_LOCATION">net.stewartcollins.letsmakeapicnic.startingLocation</string>
     <string name="EXTRA_ROUTE">net.stewartcollins.letsmakeapicnic.route</string>
+    <string name="EXTRA_NO_START_POINT">net.stewartcollins.letsmakeapicnic.noStartPoint</string>
+
 
     <string-array name="picnic_day_array">
         <item>Open Now</item>
