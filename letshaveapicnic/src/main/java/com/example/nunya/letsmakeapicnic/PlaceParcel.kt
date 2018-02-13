@@ -36,7 +36,8 @@ class PlaceParcel(val latitude: Double,
         val LIQUOR_STORE = 2
         val SUPERMARKET = 3
         val SUPERMARKET_AND_LIQUOR = 4
-        val CUSTOM_LOCATION = 5
+        val CUSTOM_START = 5
+        val CUSTOM_DESTINATION = 6
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<PlaceParcel> {

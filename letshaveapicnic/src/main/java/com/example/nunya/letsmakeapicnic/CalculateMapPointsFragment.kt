@@ -13,10 +13,15 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.places.Place
 import com.google.android.gms.maps.model.LatLng
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_calculate_map_points.*
 import java.util.*
 import kotlin.collections.ArrayList
+import android.net.NetworkInfo
+import android.net.ConnectivityManager
+
+
 
 /**
  * Created by Stewart Collins on 1/02/18.
@@ -35,6 +40,7 @@ class CalculateMapPointsFragment : Fragment() {
     private lateinit var currentLocation: LatLng
     private lateinit var destinationLatLng: LatLng
     private val shopsArray: ArrayList<PlaceDataResult> = ArrayList()
+    private val disposables: ArrayList<Disposable> = ArrayList()
 
     companion object {
         fun newInstance(menuOptions: MenuOptions): CalculateMapPointsFragment{
@@ -68,8 +74,27 @@ class CalculateMapPointsFragment : Fragment() {
         fun onMapPointsCalculated(bundle: Bundle)
     }
 
+    /**
+     * Copied this straight from android developer docs https://developer.android.com/training/monitoring-device-state/connectivity-monitoring.html
+     */
+    fun hasInternetConnection(): Boolean{
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val activeNetwork = cm.activeNetworkInfo
+        val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
+        return isConnected
+
+    }
+
     override fun onStart() {
         super.onStart()
+
+        if(!hasInternetConnection()){
+            calculatingText.text = "No internet connection found"
+            progressBar.visibility = View.GONE
+            return
+        }
+
         menuOptions = arguments.getParcelable(MenuOptions.EXTRAS_STRING)
         bundle = Bundle()
         if(menuOptions.wantsDrinks)  shopsRequired++
@@ -189,6 +214,7 @@ class CalculateMapPointsFragment : Fragment() {
                         }
                         ,{ error -> error.printStackTrace()}
                 )
+        disposables.add(observerDisposable)
     }
 
     private fun convertPlaceDataToParcel(placeData: PlaceData): PlaceParcel{
@@ -238,6 +264,7 @@ class CalculateMapPointsFragment : Fragment() {
                             }
                             ,{ error -> error.printStackTrace()}
                     )
+        disposables.add(observerDisposable)
     }
 
     private fun getDirections(waypoint1: PlaceParcel?, waypoint2: PlaceParcel?){
@@ -252,8 +279,8 @@ class CalculateMapPointsFragment : Fragment() {
                 waypoints += "|${waypoint2.latitude},${waypoint2.longitude}"
             }
         }
-        if(waypoints == null){
-            val observerDisposable = googleDirectionsApi.getRouteBetweenTwoPoints(start,getString(R.string.google_maps_key),destination)
+        val observerDisposable = if(waypoints == null){
+            googleDirectionsApi.getRouteBetweenTwoPoints(start,getString(R.string.google_maps_key),destination)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(
@@ -264,7 +291,7 @@ class CalculateMapPointsFragment : Fragment() {
                             }
                     )
         }else{
-            val observerDisposable = googleDirectionsApi.getRouteWithWaypointsPoints(start,getString(R.string.google_maps_key),destination,waypoints)
+            googleDirectionsApi.getRouteWithWaypointsPoints(start,getString(R.string.google_maps_key),destination,waypoints)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(
@@ -274,6 +301,16 @@ class CalculateMapPointsFragment : Fragment() {
                                 }
                             }
                     )
+        }
+        disposables.add(observerDisposable)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        for(disposable in disposables){
+            if(!disposable.isDisposed){
+                disposable.dispose()
+            }
         }
     }
 

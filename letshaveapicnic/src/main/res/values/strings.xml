@@ -10,6 +10,7 @@
     <string name="calculating_parks">Finding Parks</string>
     <string name="calculating_shops">Finding Shops</string>
     <string name="calculating_hours">Finding Opening Hours</string>
+    <string name="about_button">About</string>
 
     <string name="EXTRA_PARK_DETAILS">net.stewartcollins.letsmakeapicnic.parkDetails</string>
     <string name="EXTRA_MENU_OPTIONS">net.stewartcollins.letsmakeapicnic.menyOptions</string>
@@ -26,6 +27,9 @@
     <string name="EXTRA_STARTING_LOCATION">net.stewartcollins.letsmakeapicnic.startingLocation</string>
     <string name="EXTRA_ROUTE">net.stewartcollins.letsmakeapicnic.route</string>
     <string name="EXTRA_NO_START_POINT">net.stewartcollins.letsmakeapicnic.noStartPoint</string>
+    <string name="aboutText">
+        <![CDATA[<h1> Let\'s Have A Picnic </h1> <h2> Version 0.1 </h2> <p> Let\'s Have A Picnic is an open source Android project written in Kotlin by Stewart Collins using Android Studio.<br/><br/> Feel free to use the code for whatever, it is <a href="github.com/stewartcollins7/letsmakeapicnic">here</a><br/><br/> Many thanks to the artists that allowed their work to be used under open copyright licenses.<br/><br/> The logo and home screen icon was created by Ricarda M&ouml;lck, username Ricinator, under the <a href="https://creativecommons.org/publicdomain/zero/1.0/deed.en">CC0 1.0 Universal (CC0 1.0) Public Domain Dedication</a> license and accessed from pixabay.com <a href="https://pixabay.com/en/picnic-picnic-blanket-eat-meal-out-2039993/">here</a><br/><br/> All map markers were sourced from <a href="https://mapicons.mapsmarker.com">Maps Icons Collection</a> and created by Nicholas Mollet under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported</a> license.]]>
+    </string>
 
 
     <string-array name="picnic_day_array">

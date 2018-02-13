@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_main_menu.*
 class MainMenuFragment: Fragment() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
     private lateinit var listener: OnPicnicPlannerPressed
+    private lateinit var aboutListener: OnAboutPressed
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -31,11 +32,16 @@ class MainMenuFragment: Fragment() {
         }else{
             throw ClassCastException(context.toString() + "must implement OnPicnicPlannerPressed")
         }
+        if(context is OnAboutPressed){
+            aboutListener = context
+        }else{
+            throw ClassCastException(context.toString() + "must implement OnAboutPressed")
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View?  {
-        super.onCreate(savedInstanceState)
+        super.onCreateView(inflater, container, savedInstanceState)
         val view: View = inflater!!.inflate(R.layout.fragment_main_menu, container,
                 false)
         return view
@@ -80,11 +86,16 @@ class MainMenuFragment: Fragment() {
         })
 
         picnicPlannerButton.setOnClickListener({listener.onPicnicPlannerPressed()})
+        aboutButton.setOnClickListener({aboutListener.onAboutPressed()})
 
         requestLocationPermission()
     }
 
     interface OnPicnicPlannerPressed{
         fun onPicnicPlannerPressed()
+    }
+
+    interface OnAboutPressed{
+        fun onAboutPressed()
     }
 }

@@ -70,7 +70,7 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
         if(latLngBounds != null){
             Log.v("LatLngBounds","Not null")
             val padding = 150
-            val mapAnimationHandler: MapAnimationHandler = MapAnimationHandler(mMap)
+            val mapAnimationHandler = MapAnimationHandler(mMap)
             mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,padding), mapAnimationHandler)
         }else{
             mMap.uiSettings.setAllGesturesEnabled(true)
@@ -119,11 +119,13 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
     }
 
     override fun onConnected(p0: Bundle?) {
+        if (activity == null) return
         setUpMap()
         startLocationUpdates()
     }
 
     fun startLocationUpdates(){
+        if (activity == null) return
         if(ActivityCompat.checkSelfPermission(activity,
                 android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity,
@@ -175,6 +177,8 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             PlaceParcel.LIQUOR_STORE -> markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.liquor))
             PlaceParcel.SUPERMARKET_AND_LIQUOR -> markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.supermarket))
             PlaceParcel.SUPERMARKET -> markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.supermarket))
+            PlaceParcel.CUSTOM_START -> markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.start))
+            PlaceParcel.CUSTOM_DESTINATION -> markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.destination))
         }
 
         var titleTexts = placeParcel.name
@@ -226,7 +230,6 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
     }
 
     private fun getAddress(latLng: LatLng): String{
-        Log.v("Address:","Finding address")
         var geocoder = Geocoder(activity)
         var addressText = ""
         var addresses: List<Address>? = null
@@ -236,7 +239,6 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
             if(addresses != null && !addresses.isEmpty()){
                 address = addresses.get(0)
                 var i = 0
-                Log.v("Address:","Lines" + address.maxAddressLineIndex)
                 while(i <= address.maxAddressLineIndex){
                     if(i != 0){ addressText += "\n" }
                     addressText += address.getAddressLine(i)
@@ -267,7 +269,6 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,16f))
                     mMap.uiSettings.setAllGesturesEnabled(false)
                 }
-
             }
         }
     }
@@ -296,7 +297,9 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
 
     override fun onPause() {
         super.onPause()
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+        if(googleApiClient != null && googleApiClient!!.isConnected){
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+        }
     }
 
     override fun onResume() {
@@ -394,7 +397,8 @@ class PicnicMapFragment: SupportMapFragment(), OnMapReadyCallback, GoogleMap.OnM
 //        return array
     }
 
-    private fun calculateMapBounds(mapPoints: ArrayList<LatLng>): LatLngBounds {
+    private fun calculateMapBounds(mapPoints: ArrayList<LatLng>): LatLngBounds? {
+        if(mapPoints.size < 1) return null
         val latLngBoundsBuilder = LatLngBounds.builder()
         for(mapPoint in mapPoints){
             latLngBoundsBuilder.include(mapPoint)
