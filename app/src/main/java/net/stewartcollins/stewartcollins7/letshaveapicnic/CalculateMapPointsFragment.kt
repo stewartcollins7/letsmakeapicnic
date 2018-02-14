@@ -18,8 +18,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import android.net.ConnectivityManager
 
-
-
 /**
  * A loading fragment that retrieves all the required map data requested for the picnic
  * such as the park or destination, the current location or start point, the shops and opening hours
@@ -71,22 +69,6 @@ class CalculateMapPointsFragment : Fragment() {
         return view
     }
 
-    interface OnMapPointsCalculated{
-        fun onMapPointsCalculated(bundle: Bundle)
-    }
-
-    /**
-     * Copied this straight from android developer docs https://developer.android.com/training/monitoring-device-state/connectivity-monitoring.html
-     */
-    private fun hasInternetConnection(): Boolean{
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        val activeNetwork = cm.activeNetworkInfo
-        val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-        return isConnected
-
-    }
-
     override fun onStart() {
         super.onStart()
 
@@ -95,7 +77,6 @@ class CalculateMapPointsFragment : Fragment() {
             progressBar.visibility = View.GONE
             return
         }
-
         menuOptions = arguments.getParcelable(MenuOptions.EXTRAS_STRING)
         bundle = Bundle()
         if(menuOptions.wantsDrinks)  shopsRequired++
@@ -129,7 +110,26 @@ class CalculateMapPointsFragment : Fragment() {
             bundle.putParcelable(getString(R.string.EXTRA_STARTING_LOCATION),menuOptions.startingLocation)
             getDestination()
         }
+    }
 
+    override fun onStop() {
+        super.onStop()
+        for(disposable in disposables){
+            if(!disposable.isDisposed){
+                disposable.dispose()
+            }
+        }
+    }
+
+    /**
+     * Copied this straight from android developer docs https://developer.android.com/training/monitoring-device-state/connectivity-monitoring.html
+     */
+    private fun hasInternetConnection(): Boolean{
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val activeNetwork = cm.activeNetworkInfo
+        val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
+        return isConnected
 
     }
 
@@ -304,15 +304,6 @@ class CalculateMapPointsFragment : Fragment() {
         disposables.add(observerDisposable)
     }
 
-    override fun onStop() {
-        super.onStop()
-        for(disposable in disposables){
-            if(!disposable.isDisposed){
-                disposable.dispose()
-            }
-        }
-    }
-
     private fun getCurrentDayOfTheWeek(): Int{
         val calendar = Calendar.getInstance()
         val currentCalendarFormatDay = calendar.get(Calendar.DAY_OF_WEEK)
@@ -428,6 +419,9 @@ class CalculateMapPointsFragment : Fragment() {
         }else {
             return false
         }
+    }
 
+    interface OnMapPointsCalculated{
+        fun onMapPointsCalculated(bundle: Bundle)
     }
 }
